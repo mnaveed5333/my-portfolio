@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1",
+    "title": "Portfolio Website",
+    "description": "A personal portfolio built with Next.js and Tailwind CSS showcasing projects and skills.",
+    "tech": ["Next.js", "Tailwind CSS", "React"],
+    "github": "https://github.com",
+    "live": "https://example.com"
+  },
+  {
+    "id": "2",
+    "title": "E-Commerce App",
+    "description": "Full stack e-commerce platform with cart, auth, and payment integration.",
+    "tech": ["React", "Node.js", "MongoDB"],
+    "github": "https://github.com",
+    "live": "https://example.com"
+  }
+]
