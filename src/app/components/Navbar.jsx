@@ -13,7 +13,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const navLinks = ['home', 'projects'];
+  const navLinks = ['home', 'projects', 'skills', 'experience'];
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${

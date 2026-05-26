@@ -26,7 +26,7 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
     const payload = {
       ...form,
       tech: form.tech.split(',').map((t) => t.trim()).filter(Boolean),
-      ...(project && { id: project.id }),
+      ...(project && { _id: project._id }), // ← send _id not id
     };
     await fetch('/api/projects', {
       method: project ? 'PUT' : 'POST',
@@ -59,9 +59,7 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {fields.map(({ key, label, placeholder }) => (
             <div key={key}>
-              <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">
-                {label}
-              </label>
+              <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">{label}</label>
               <input
                 type="text"
                 value={form[key]}
@@ -74,9 +72,7 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
           ))}
 
           <div>
-            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">
-              Description
-            </label>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">Description</label>
             <textarea
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}

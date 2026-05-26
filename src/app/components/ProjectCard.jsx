@@ -2,11 +2,17 @@ import Link from 'next/link';
 import { FiGithub, FiExternalLink } from 'react-icons/fi';
 
 export default function ProjectCard({ project }) {
+  const slug = project._id; // _id is now a plain string from page.js
+
+  if (!slug) {
+    console.error('ProjectCard: missing _id on project', project);
+    return null; // don't render a broken card
+  }
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 hover:border-emerald-500/40 rounded-2xl p-6 flex flex-col gap-4 transition-all duration-300 hover:-translate-y-1 group">
       <div className="flex items-start justify-between">
-        {/* ← title now links to project page */}
-        <Link href={`/projects/${project.id}`}>
+        <Link href={`/projects/${slug}`}>
           <h3 className="text-white font-semibold text-lg group-hover:text-emerald-400 transition-colors cursor-pointer">
             {project.title}
           </h3>
@@ -38,8 +44,7 @@ export default function ProjectCard({ project }) {
         ))}
       </div>
 
-      {/* ← view details link at bottom */}
-      <Link href={`/projects/${project.id}`}
+      <Link href={`/projects/${slug}`}
         className="text-xs text-zinc-600 hover:text-emerald-400 transition-colors mt-1">
         View details →
       </Link>
