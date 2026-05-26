@@ -1,36 +1,36 @@
 import { NextResponse } from 'next/server';
-import { getProjects, saveProjects } from '../../../../lib/projects';
+import { connectDB, Project } from '../../../../lib/projects';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET() {
-  const projects = getProjects();
+  await connectDB();
+  const projects = await Project.find({});
   return NextResponse.json(projects);
 }
 
 export async function POST(req) {
+  await connectDB();
   const body = await req.json();
-  const projects = getProjects();
-  const newProject = { id: uuidv4(), ...body };
-  projects.push(newProject);
-  saveProjects(projects);
-  return NextResponse.json(newProject, { status: 201 });
+  const project = await Project.create({ id: uuidv4(), ...body });
+  return NextResponse.json(project, { status: 201 });
 }
 
 export async function PUT(req) {
+  await connectDB();
   const body = await req.json();
-  const projects = getProjects();
-  const index = projects.findIndex((p) => p.id === body.id);
-  if (index === -1)
+  const project = await Project.findByIdAndUpdate(
+    body._id,
+    { ...body },
+    { new: true }
+  );
+  if (!project)
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  projects[index] = { ...projects[index], ...body };
-  saveProjects(projects);
-  return NextResponse.json(projects[index]);
+  return NextResponse.json(project);
 }
 
 export async function DELETE(req) {
+  await connectDB();
   const { id } = await req.json();
-  const projects = getProjects();
-  const filtered = projects.filter((p) => p.id !== id);
-  saveProjects(filtered);
+  await Project.findByIdAndDelete(id);
   return NextResponse.json({ success: true });
 }

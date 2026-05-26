@@ -22,7 +22,7 @@ export default function ProjectList({ projects, onEdit, onRefresh }) {
   return (
     <div className="flex flex-col gap-4">
       {projects.map((project) => (
-        <div key={project.id}
+        <div key={project._id}  
           className="bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl px-6 py-5 flex items-start justify-between gap-4 transition-all">
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-semibold mb-1">{project.title}</h3>
@@ -54,7 +54,7 @@ export default function ProjectList({ projects, onEdit, onRefresh }) {
               className="text-zinc-500 hover:text-emerald-400 p-2 transition-colors">
               <FiEdit2 size={16} />
             </button>
-            <button onClick={() => handleDelete(project.id)}
+            <button onClick={() => handleDelete(project._id)}  
               className="text-zinc-500 hover:text-red-400 p-2 transition-colors">
               <FiTrash2 size={16} />
             </button>
