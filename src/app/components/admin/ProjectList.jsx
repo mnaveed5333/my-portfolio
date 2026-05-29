@@ -3,12 +3,21 @@ import { FiEdit2, FiTrash2, FiExternalLink, FiGithub } from 'react-icons/fi';
 export default function ProjectList({ projects, onEdit, onRefresh }) {
   const handleDelete = async (id) => {
     if (!confirm('Delete this project?')) return;
-    await fetch('/api/projects', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id }),
-    });
-    onRefresh();
+    try {
+      const res = await fetch('/api/projects', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || 'Failed to delete');
+        return;
+      }
+      onRefresh();
+    } catch (err) {
+      alert('Failed to delete project');
+    }
   };
 
   if (projects.length === 0) {
@@ -22,13 +31,13 @@ export default function ProjectList({ projects, onEdit, onRefresh }) {
   return (
     <div className="flex flex-col gap-4">
       {projects.map((project) => (
-        <div key={project._id}  
+        <div key={project._id}
           className="bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 rounded-2xl px-6 py-5 flex items-start justify-between gap-4 transition-all">
           <div className="flex-1 min-w-0">
             <h3 className="text-white font-semibold mb-1">{project.title}</h3>
             <p className="text-zinc-500 text-sm mb-3 line-clamp-2">{project.description}</p>
             <div className="flex flex-wrap gap-2">
-              {project.tech.map((t) => (
+              {(project.tech || []).map((t) => (
                 <span key={t}
                   className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
                   {t}
@@ -54,7 +63,7 @@ export default function ProjectList({ projects, onEdit, onRefresh }) {
               className="text-zinc-500 hover:text-emerald-400 p-2 transition-colors">
               <FiEdit2 size={16} />
             </button>
-            <button onClick={() => handleDelete(project._id)}  
+            <button onClick={() => handleDelete(project._id)}
               className="text-zinc-500 hover:text-red-400 p-2 transition-colors">
               <FiTrash2 size={16} />
             </button>

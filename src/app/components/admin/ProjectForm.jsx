@@ -7,13 +7,14 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
     title: '', description: '', tech: '', github: '', live: '',
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     if (project) {
       setForm({
-        title: project.title,
-        description: project.description,
-        tech: project.tech.join(', '),
+        title: project.title || '',
+        description: project.description || '',
+        tech: (project.tech || []).join(', '),
         github: project.github || '',
         live: project.live || '',
       });
@@ -23,26 +24,35 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const payload = {
-      ...form,
-      tech: form.tech.split(',').map((t) => t.trim()).filter(Boolean),
-      ...(project && { _id: project._id }), // ← send _id not id
-    };
-    await fetch('/api/projects', {
-      method: project ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    setLoading(false);
-    onRefresh();
-    onClose();
+    setError('');
+    try {
+      const payload = {
+        title: form.title,
+        description: form.description,
+        tech: form.tech.split(',').map((t) => t.trim()).filter(Boolean),
+        github: form.github,
+        live: form.live,
+        ...(project && { _id: project._id }),
+      };
+      const res = await fetch('/api/projects', {
+        method: project ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Something went wrong');
+      }
+      onRefresh();
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const fields = [
-    { key: 'title', label: 'Project Title', placeholder: 'My Awesome Project' },
-    { key: 'github', label: 'GitHub URL', placeholder: 'https://github.com/...' },
-    { key: 'live', label: 'Live URL', placeholder: 'https://example.com' },
-  ];
+  const inputClass = "w-full bg-zinc-950 border border-zinc-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-zinc-600";
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center px-4">
@@ -56,44 +66,49 @@ export default function ProjectForm({ project, onClose, onRefresh }) {
           {project ? 'Edit Project' : 'Add New Project'}
         </h2>
 
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-sm px-4 py-3 rounded-xl mb-4">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {fields.map(({ key, label, placeholder }) => (
-            <div key={key}>
-              <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">{label}</label>
-              <input
-                type="text"
-                value={form[key]}
-                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
-                placeholder={placeholder}
-                required={key === 'title'}
-                className="w-full bg-zinc-950 border border-zinc-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-zinc-600"
-              />
-            </div>
-          ))}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">Project Title *</label>
+            <input type="text" value={form.title} required
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              placeholder="My Awesome Project" className={inputClass} />
+          </div>
 
           <div>
-            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">Description</label>
-            <textarea
-              value={form.description}
+            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">Description *</label>
+            <textarea value={form.description} required rows={3}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               placeholder="What does this project do?"
-              required rows={3}
-              className="w-full bg-zinc-950 border border-zinc-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-zinc-600 resize-none"
-            />
+              className={`${inputClass} resize-none`} />
           </div>
 
           <div>
             <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">
-              Tech Stack <span className="text-zinc-600 normal-case">(comma separated)</span>
+              Tech Stack * <span className="text-zinc-600 normal-case">(comma separated)</span>
             </label>
-            <input
-              type="text"
-              value={form.tech}
+            <input type="text" value={form.tech} required
               onChange={(e) => setForm({ ...form, tech: e.target.value })}
-              placeholder="React, Next.js, Tailwind"
-              required
-              className="w-full bg-zinc-950 border border-zinc-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-white text-sm outline-none transition-colors placeholder:text-zinc-600"
-            />
+              placeholder="React, Next.js, Tailwind" className={inputClass} />
+          </div>
+
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">GitHub URL</label>
+            <input type="text" value={form.github}
+              onChange={(e) => setForm({ ...form, github: e.target.value })}
+              placeholder="https://github.com/..." className={inputClass} />
+          </div>
+
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide block mb-1.5">Live URL</label>
+            <input type="text" value={form.live}
+              onChange={(e) => setForm({ ...form, live: e.target.value })}
+              placeholder="https://example.com" className={inputClass} />
           </div>
 
           <div className="flex gap-3 mt-2">

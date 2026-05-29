@@ -10,20 +10,26 @@ export default function AdminClient() {
   const [projects, setProjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editProject, setEditProject] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   const fetchProjects = async () => {
-    const res = await fetch('/api/projects');
-    const data = await res.json();
-    setProjects(data);
+    try {
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      setProjects(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { fetchProjects(); }, []);
 
   const handleLogout = async () => {
-    const res = await fetch('/api/logout', { method: 'POST', credentials: 'include' });
-    const data = await res.json();
-    router.push(data.redirect);        // ← uses route from backend
+    await fetch('/api/logout', { method: 'POST', credentials: 'include' });
+    router.push('/login');
     router.refresh();
   };
 
@@ -46,18 +52,24 @@ export default function AdminClient() {
             <FaCode className="text-emerald-400" size={22} />
             <h1 className="text-white font-bold text-xl">Admin Dashboard</h1>
           </div>
-          <button onClick={handleLogout}
-            className="flex items-center gap-2 text-zinc-400 hover:text-red-400 border border-zinc-800 hover:border-red-500/40 px-4 py-2 rounded-xl text-sm transition-all">
-            <FiLogOut size={15} />
-            Logout
-          </button>
+          <div className="flex items-center gap-3">
+            <a href="/"
+              className="text-zinc-400 hover:text-emerald-400 text-sm transition-colors">
+              ← Portfolio
+            </a>
+            <button onClick={handleLogout}
+              className="flex items-center gap-2 text-zinc-400 hover:text-red-400 border border-zinc-800 hover:border-red-500/40 px-4 py-2 rounded-xl text-sm transition-all">
+              <FiLogOut size={15} />
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {[
             { label: 'Total Projects', value: projects.length },
-            { label: 'Technologies', value: [...new Set(projects.flatMap(p => p.tech))].length },
+            { label: 'Technologies', value: [...new Set(projects.flatMap(p => p.tech || []))].length },
             { label: 'Live Projects', value: projects.filter(p => p.live).length },
           ].map((stat) => (
             <div key={stat.label}
@@ -79,11 +91,15 @@ export default function AdminClient() {
         </div>
 
         {/* Project List */}
-        <ProjectList
-          projects={projects}
-          onEdit={handleEdit}
-          onRefresh={fetchProjects}
-        />
+        {loading ? (
+          <div className="text-center py-20 text-zinc-600">Loading...</div>
+        ) : (
+          <ProjectList
+            projects={projects}
+            onEdit={handleEdit}
+            onRefresh={fetchProjects}
+          />
+        )}
 
         {/* Modal Form */}
         {showForm && (
