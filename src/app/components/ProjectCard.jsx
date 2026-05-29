@@ -33,8 +33,7 @@ export default function ProjectCard({ project }) {
         </div>
       </div>
 
-      <p className="text-zinc-500 text-sm leading-relaxed flex-1">{project.description}</p>
-
+<p className="text-zinc-500 text-sm leading-relaxed flex-1 line-clamp-2">{project.description}</p>
       <div className="flex flex-wrap gap-2">
         {project.tech.map((t) => (
           <span key={t}
